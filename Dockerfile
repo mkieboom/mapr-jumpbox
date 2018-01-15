@@ -25,8 +25,8 @@ ADD mapr_background.png /headless/.config/
 ADD xfce4-desktop.xml /headless/.config/xfce4/xfconf/xfce-perchannel-xml
 
 # Add a launch script creating the mapr group and user
-ADD launch.sh /launch.sh
-RUN sudo -E chmod +x /launch.sh
+ADD launch-jumpbox.sh /launch-jumpbox.sh
+RUN sudo -E chmod +x /launch-jumpbox.sh
 
 # Launch the script
-CMD sudo -E /launch.sh
+CMD sudo -E /launch-jumpbox.sh
