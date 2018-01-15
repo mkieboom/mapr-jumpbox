@@ -1,6 +1,13 @@
 FROM mkieboom/mapr-jumpbox-base
-CMD /bin/bash
 
+# Defaults in case not provided using -e
+ENV MAPR_CLUSTER demo.mapr.com
+ENV MAPR_CLDB_HOSTS MAPRN01
+ENV MAPR_CONTAINER_USER mapr
+ENV MAPR_CONTAINER_GROUP mapr
+ENV MAPR_CONTAINER_UID 5000
+ENV MAPR_CONTAINER_GID 5000
+ENV MAPR_MOUNT_PATH /mapr
 
 # Set the VNC password
 ENV VNC_PW=mapr
@@ -10,27 +17,16 @@ USER root
 
 # Install ssh client and nfs libraries
 RUN yum install -y openssh-clients nfs-utils nfs-utils-lib && \
-    yum clean all
-
-# Add the mapr user
-RUN groupadd -g 5000 mapr
-RUN useradd -u 5000 -g 5000 mapr
-
-# Set default password for user root and for user mapr
-RUN echo -e "mapr\nmapr" | (passwd --stdin mapr)
-RUN echo -e "mapr\nmapr" | (passwd --stdin root)
-
-# Add mapr user to the list of sudoers
-RUN echo "mapr	ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+    yum clean all && \
+    rm -rf /var/cache/yum
 
 # Add the MapR desktop background picture
 ADD mapr_background.png /headless/.config/
 ADD xfce4-desktop.xml /headless/.config/xfce4/xfconf/xfce-perchannel-xml
 
-## switch back to default user (mapr)
-USER mapr
+# Add a launch script creating the mapr group and user
+ADD launch.sh /launch.sh
+RUN sudo -E chmod +x /launch.sh
 
-# docker build -t mkieboom/mapr-jumpbox .
-
-# docker run -it --privileged -p 5901:5901 -p 80:6901 mkieboom/mapr-jumpbox /bin/bash
-
+# Launch the script
+CMD sudo -E /launch.sh
